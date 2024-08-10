@@ -1,7 +1,33 @@
 use actix_web::{web, HttpResponse, Responder};
-use sqlx::{PgConnection, PgPool, Transaction};
+use argon2::{
+    self,
+    password_hash::{rand_core, SaltString},
+    Argon2, PasswordHash, PasswordHasher, PasswordVerifier,
+};
+use chrono::{Duration, Utc};
+use jsonwebtoken::{encode, EncodingKey, Header};
+use rand_core::OsRng;
+use serde::{Deserialize, Serialize};
+use sqlx::{query_as, PgConnection, PgPool};
+use uuid::Uuid;
 
-use crate::models::{Course, NewCourse};
+use crate::models::LoginUser;
+use crate::models::{Course, NewCourse, RegisterUser};
+
+#[derive(Deserialize)]
+pub struct CourseFilter {
+    name: Option<String>,
+    category: Option<String>,
+    date: Option<String>,
+    min_amount: Option<f64>,
+    max_amount: Option<f64>,
+}
+
+#[derive(Serialize, Deserialize)]
+pub(crate) struct Claims {
+    pub sub: String,
+    pub exp: usize,
+}
 
 pub async fn add_course(pool: web::Data<PgPool>, course: web::Json<NewCourse>) -> impl Responder {
     let query =
@@ -18,8 +44,33 @@ pub async fn add_course(pool: web::Data<PgPool>, course: web::Json<NewCourse>) -
     HttpResponse::Ok().json(id)
 }
 
-pub async fn get_courses(pool: web::Data<PgPool>) -> impl Responder {
-    let courses = sqlx::query_as::<_, Course>("SELECT * FROM courses")
+pub async fn get_courses(
+    pool: web::Data<PgPool>,
+    filter: web::Query<CourseFilter>,
+) -> impl Responder {
+    let mut query = String::from("SELECT * FROM courses WHERE 1=1");
+
+    if let Some(name) = &filter.name {
+        query.push_str(&format!(" AND name LIKE '%{}%'", name));
+    }
+
+    if let Some(category) = &filter.category {
+        query.push_str(&format!(" AND category = '{}'", category));
+    }
+
+    if let Some(date) = &filter.date {
+        query.push_str(&format!(" AND date = '{}'", date));
+    }
+
+    if let Some(min_amount) = filter.min_amount {
+        query.push_str(&format!(" AND amount >= {}", min_amount));
+    }
+
+    if let Some(max_amount) = filter.max_amount {
+        query.push_str(&format!(" AND amount <= {}", max_amount));
+    }
+
+    let courses = query_as::<_, Course>(&query)
         .fetch_all(pool.get_ref())
         .await
         .expect("Failed to fetch courses.");
@@ -117,4 +168,81 @@ async fn repair_id_sequence(conn: &mut PgConnection, last_id: i64) -> Result<(),
         .await?;
 
     Ok(())
+}
+
+pub async fn register_user(
+    pool: web::Data<PgPool>,
+    user_data: web::Json<RegisterUser>,
+) -> impl Responder {
+    let salt = SaltString::generate(&mut OsRng);
+    let argon2 = Argon2::default();
+
+    let hashed_password = argon2
+        .hash_password(user_data.password.as_bytes(), &salt)
+        .unwrap()
+        .to_string();
+
+    let result = sqlx::query!(
+        r#"
+        INSERT INTO users (id, username, email, hashed_password, created_at)
+        VALUES ($1, $2, $3, $4, $5)
+        "#,
+        Uuid::new_v4(),
+        user_data.username,
+        user_data.email,
+        hashed_password,
+        Utc::now().naive_utc(),
+    )
+    .execute(pool.get_ref())
+    .await;
+
+    match result {
+        Ok(_) => HttpResponse::Ok().body("User registered successfully"),
+        Err(e) => {
+            HttpResponse::InternalServerError().body(format!("Failed to register user: {}", e))
+        }
+    }
+}
+
+pub async fn login_user(
+    pool: web::Data<PgPool>,
+    user_data: web::Json<LoginUser>,
+) -> impl Responder {
+    let result = sqlx::query!(
+        r#"SELECT id, username, email, hashed_password, created_at FROM users WHERE email = $1"#,
+        user_data.email
+    )
+    .fetch_one(pool.get_ref())
+    .await;
+
+    let user = match result {
+        Ok(record) => record,
+        Err(_) => return HttpResponse::Unauthorized().body("Invalid credentials"),
+    };
+
+    let parsed_hash = PasswordHash::new(&user.hashed_password).unwrap();
+    let argon2 = Argon2::default();
+
+    let is_valid = argon2
+        .verify_password(user_data.0.password.as_bytes(), &parsed_hash)
+        .is_ok();
+
+    if !is_valid {
+        return HttpResponse::Unauthorized().body("Invalid credentials");
+    }
+
+    let expiration = Utc::now() + Duration::hours(24);
+    let claims = Claims {
+        sub: user.id.to_string(),
+        exp: expiration.timestamp() as usize,
+    };
+
+    let token = encode(
+        &Header::default(),
+        &claims,
+        &EncodingKey::from_secret("your_secret_key".as_ref()),
+    )
+    .unwrap();
+
+    HttpResponse::Ok().json(token)
 }
