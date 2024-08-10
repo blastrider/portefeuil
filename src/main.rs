@@ -25,6 +25,10 @@ async fn main() -> std::io::Result<()> {
             .route("/courses", web::get().to(handlers::get_courses))
             .route("/courses/{id}", web::delete().to(handlers::delete_course))
             .route("/health", web::get().to(handlers::health_check))
+            .route(
+                "/check-repair-ids",
+                web::get().to(handlers::check_and_repair_ids),
+            )
     })
     .bind("0.0.0.0:8080")?
     .run()
