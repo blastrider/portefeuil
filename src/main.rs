@@ -38,7 +38,11 @@ async fn main() -> std::io::Result<()> {
                     .wrap(auth) // Middleware JWT appliqué sur ces routes seulement
                     .route("/courses", web::get().to(get_courses))
                     .route("/courses", web::post().to(add_course))
-                    .route("/courses/{id}", web::delete().to(delete_course)),
+                    .route("/courses/{id}", web::delete().to(delete_course))
+                    .route(
+                        "/check-repair-ids",
+                        web::get().to(handlers::check_and_repair_ids),
+                    ),
             )
             .route("/register", web::post().to(register_user)) // Route non protégée
             .route("/login", web::post().to(login_user)) // Route non protégée

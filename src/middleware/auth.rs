@@ -1,8 +1,5 @@
 use crate::handlers::Claims;
-use actix_web::{
-    dev::{ServiceRequest, ServiceResponse},
-    Error, HttpMessage,
-};
+use actix_web::{dev::ServiceRequest, Error, HttpMessage};
 use actix_web_httpauth::extractors::bearer::BearerAuth;
 use jsonwebtoken::{decode, DecodingKey, Validation};
 
@@ -18,6 +15,6 @@ pub async fn jwt_middleware(
             req.extensions_mut().insert(token_data.claims.sub);
             Ok(req)
         }
-        Err(err) => Err((actix_web::error::ErrorUnauthorized("Invalid token"), req)),
+        Err(_err) => Err((actix_web::error::ErrorUnauthorized("Invalid token"), req)),
     }
 }
