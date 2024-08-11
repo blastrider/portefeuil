@@ -12,14 +12,15 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
-  app:
-    build: .
-    environment:
-      - DATABASE_URL=postgres://user:password@db:5432/portefeuil
-    ports:
-      - "8080:8080"
-    depends_on:
-      - db
+#  app:
+#    build: .
+#    environment:
+#      - DATABASE_URL=postgres://user:password@db:5432/portefeuil
+#      - RUST_LOG=debug
+#    ports:
+#      - "8080:8080"
+#    depends_on:
+#      - db
 
 volumes:
   postgres_data:

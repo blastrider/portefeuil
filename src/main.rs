@@ -2,8 +2,9 @@ mod handlers;
 mod middleware;
 mod models;
 
+use actix_cors::Cors;
 use actix_web::middleware::Logger;
-use actix_web::{web, App, HttpServer};
+use actix_web::{http, web, App, HttpServer};
 use actix_web_httpauth::middleware::HttpAuthentication;
 use dotenv::dotenv;
 use sqlx::postgres::PgPoolOptions;
@@ -33,6 +34,14 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .app_data(web::Data::new(pool.clone()))
             .wrap(Logger::default())
+            .wrap(
+                Cors::default()
+                    .allowed_origin("http://localhost:3000") // Autoriser les requêtes du front-end
+                    .allowed_methods(vec!["GET", "POST", "DELETE", "OPTIONS"])
+                    .allowed_headers(vec![http::header::AUTHORIZATION, http::header::ACCEPT])
+                    .allowed_header(http::header::CONTENT_TYPE)
+                    .max_age(3600),
+            )
             .service(
                 web::scope("/api")
                     .wrap(auth) // Middleware JWT appliqué sur ces routes seulement

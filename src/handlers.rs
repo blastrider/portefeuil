@@ -8,7 +8,7 @@ use chrono::{Duration, Utc};
 use jsonwebtoken::{encode, EncodingKey, Header};
 use rand_core::OsRng;
 use serde::{Deserialize, Serialize};
-use sqlx::{query_as, PgConnection, PgPool};
+use sqlx::{query_as, PgConnection, PgPool, Row};
 use uuid::Uuid;
 
 use crate::models::LoginUser;
@@ -182,17 +182,17 @@ pub async fn register_user(
         .unwrap()
         .to_string();
 
-    let result = sqlx::query!(
+    let result = sqlx::query(
         r#"
         INSERT INTO users (id, username, email, hashed_password, created_at)
         VALUES ($1, $2, $3, $4, $5)
         "#,
-        Uuid::new_v4(),
-        user_data.username,
-        user_data.email,
-        hashed_password,
-        Utc::now().naive_utc(),
     )
+    .bind(Uuid::new_v4())
+    .bind(&user_data.username)
+    .bind(&user_data.email)
+    .bind(&hashed_password)
+    .bind(Utc::now().naive_utc())
     .execute(pool.get_ref())
     .await;
 
@@ -208,19 +208,23 @@ pub async fn login_user(
     pool: web::Data<PgPool>,
     user_data: web::Json<LoginUser>,
 ) -> impl Responder {
-    let result = sqlx::query!(
+    let result = sqlx::query(
         r#"SELECT id, username, email, hashed_password, created_at FROM users WHERE email = $1"#,
-        user_data.email
     )
+    .bind(&user_data.email)
     .fetch_one(pool.get_ref())
     .await;
 
-    let user = match result {
+    let row = match result {
         Ok(record) => record,
         Err(_) => return HttpResponse::Unauthorized().body("Invalid credentials"),
     };
 
-    let parsed_hash = PasswordHash::new(&user.hashed_password).unwrap();
+    // Extraction des valeurs du résultat de la requête
+    let user_id: uuid::Uuid = row.try_get("id").unwrap();
+    let hashed_password: String = row.try_get("hashed_password").unwrap();
+
+    let parsed_hash = PasswordHash::new(&hashed_password).unwrap();
     let argon2 = Argon2::default();
 
     let is_valid = argon2
@@ -231,9 +235,9 @@ pub async fn login_user(
         return HttpResponse::Unauthorized().body("Invalid credentials");
     }
 
-    let expiration = Utc::now() + Duration::hours(24);
+    let expiration = Utc::now() + chrono::Duration::hours(24);
     let claims = Claims {
-        sub: user.id.to_string(),
+        sub: user_id.to_string(),
         exp: expiration.timestamp() as usize,
     };
 
