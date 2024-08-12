@@ -1,3 +1,3 @@
-database_url: "postgres://user:password@localhost/portefeuil"
+database_url: "postgres://user:password@db/portefeuil"
 server_port: 8080
 log_level: "info"

@@ -4,7 +4,7 @@ use argon2::{
     password_hash::{rand_core, SaltString},
     Argon2, PasswordHash, PasswordHasher, PasswordVerifier,
 };
-use chrono::{Duration, Utc};
+use chrono::Utc;
 use jsonwebtoken::{encode, EncodingKey, Header};
 use rand_core::OsRng;
 use serde::{Deserialize, Serialize};

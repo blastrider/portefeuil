@@ -1,4 +1,5 @@
 mod config;
+mod db;
 mod handlers;
 mod middleware;
 mod models;
@@ -8,6 +9,7 @@ use actix_web::middleware::Logger;
 use actix_web::{http, web, App, HttpServer};
 use actix_web_httpauth::middleware::HttpAuthentication;
 use config::load_config;
+use db::migrations::run_migrations_if_needed;
 use dotenv::dotenv;
 use env_logger::Env;
 use sqlx::postgres::PgPoolOptions;
@@ -38,6 +40,11 @@ async fn main() -> std::io::Result<()> {
         .connect(&app_config.database_url)
         .await
         .expect("Failed to create pool.");
+
+    // Exécuter les migrations si nécessaire
+    run_migrations_if_needed(&pool)
+        .await
+        .expect("Failed to run migrations");
 
     HttpServer::new(move || {
         let auth = HttpAuthentication::bearer(jwt_middleware);

@@ -13,7 +13,8 @@ RUN apt-get update && apt-get install -y libpq-dev && \
 FROM ubuntu:22.04
 
 COPY --from=builder /app/target/release/portefeuil /app/portefeuil
-COPY .env /app/.env
+RUN mkdir -pv /app/config
+COPY ./config/default.yaml /app/config/default.yaml
 
 # Commande de lancement
 CMD ["/app/portefeuil"]
