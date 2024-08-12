@@ -20,12 +20,13 @@ http://localhost:8080
 
 **Corps de la requête :**
 
-````json
+`````json
 {
   "username": "string",   // Nom d'utilisateur (obligatoire)
   "email": "string",      // Email de l'utilisateur (obligatoire)
   "password": "string"    // Mot de passe (obligatoire)
 }
+```
 
 Exemple de requête :
 
@@ -37,7 +38,7 @@ curl -X POST http://localhost:8080/register \
     "email": "john@example.com",
     "password": "password123"
 }'
-````
+```
 
 Réponse :
 
@@ -83,7 +84,7 @@ curl -X POST http://localhost:8080/login \
     "email": "john@example.com",
     "password": "password123"
 }'
-````
+`````
 
 Réponse :
 
