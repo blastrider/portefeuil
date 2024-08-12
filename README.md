@@ -20,11 +20,11 @@ http://localhost:8080
 
 **Corps de la requête :**
 
-````json
+```json
 {
-  "username": "string",   // Nom d'utilisateur (obligatoire)
-  "email": "string",      // Email de l'utilisateur (obligatoire)
-  "password": "string"    // Mot de passe (obligatoire)
+  "username": "string", // Nom d'utilisateur (obligatoire)
+  "email": "string", // Email de l'utilisateur (obligatoire)
+  "password": "string" // Mot de passe (obligatoire)
 }
 ```
 
@@ -70,8 +70,8 @@ Corps de la requête :
 
 ```json
 {
-  "email": "string",      // Email de l'utilisateur (obligatoire)
-  "password": "string"    // Mot de passe (obligatoire)
+  "email": "string", // Email de l'utilisateur (obligatoire)
+  "password": "string" // Mot de passe (obligatoire)
 }
 ```
 
@@ -298,4 +298,7 @@ Notes
 Pagination et Filtrage : Le filtrage est disponible sur les paramètres name, category, date, min_amount, et max_amount pour la route GET /courses.
 Authentification : Les utilisateurs doivent s'inscrire via /register et se connecter via /login pour obtenir un token JWT.
 Protéger les routes : Les routes sensibles (ajout, suppression, etc.) sont protégées par JWT pour s'assurer que seuls les utilisateurs authentifiés peuvent les utiliser.
-````
+
+```
+
+```
