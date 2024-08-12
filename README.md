@@ -18,7 +18,7 @@ http://localhost:8080
 
 **Description :** Permet à un nouvel utilisateur de s'inscrire.
 
-**Corps de la requête :**
+_Corps de la requête :_
 
 ```json
 {
@@ -28,7 +28,7 @@ http://localhost:8080
 }
 ```
 
-Exemple de requête :
+**Exemple de requête :**
 
 ```bash
 curl -X POST http://localhost:8080/register \
@@ -58,15 +58,15 @@ Code HTTP 400 : Requête invalide (par exemple, si un champ obligatoire est manq
 
 Code HTTP 500 : Erreur interne du serveur.
 
-2. Connexion d'un utilisateur
+### 2. Connexion d'un utilisateur
 
-URL : /login
+**URL :** `/login`
 
-Méthode HTTP : POST
+**Méthode HTTP :** `POST`
 
 Description : Permet à un utilisateur existant de se connecter et de recevoir un token JWT.
 
-Corps de la requête :
+_Corps de la requête :_
 
 ```json
 {
@@ -75,7 +75,7 @@ Corps de la requête :
 }
 ```
 
-Exemple de requête :
+**Exemple de requête :**
 
 ```bash
 Copier le code
@@ -101,10 +101,11 @@ Code HTTP 401 : Identifiants incorrects.
 
 Code HTTP 500 : Erreur interne du serveur.
 
-3. Récupérer la liste des courses (avec filtres)
-   URL : /courses
+### 3. Récupérer la liste des courses (avec filtres)
 
-Méthode HTTP : GET
+**URL :** `/courses`
+
+**Méthode HTTP :** `GET`
 
 Description : Récupère toutes les courses enregistrées dans la base de données, avec des options de filtrage. Cette route est protégée par JWT.
 
@@ -117,8 +118,8 @@ category : Filtre les courses par catégorie exacte.
 date : Filtre les courses par date exacte (format YYYY-MM-DD).
 min_amount : Filtre les courses avec un montant supérieur ou égal à cette valeur.
 max_amount : Filtre les courses avec un montant inférieur ou égal à cette valeur.
-
-Exemple de requête :
+Corps de la requête :
+**Exemple de requête :**
 
 ```bash
 curl -X GET "http://localhost:8080/courses?name=alimentaire&min_amount=20&max_amount=100" \
@@ -145,14 +146,15 @@ Code HTTP 401 : Token JWT manquant ou invalide.
 
 Code HTTP 500 : Erreur interne du serveur.
 
-4. Ajouter une course
-   URL : /courses
+### 4. Ajouter une course
 
-Méthode HTTP : POST
+**URL :** `/courses`
+
+**Méthode HTTP :** `POST`
 
 Description : Ajoute une nouvelle course à la base de données. Cette route est protégée par JWT.
 
-Corps de la requête :
+_Corps de la requête :_
 
 ```json
 {
@@ -163,7 +165,7 @@ Corps de la requête :
 }
 ```
 
-Exemple de requête :
+**Exemple de requête :**
 
 ```bash
 Copier le code
@@ -194,18 +196,19 @@ Code HTTP 401 : Token JWT manquant ou invalide.
 
 Code HTTP 500 : Erreur interne du serveur.
 
-5. Supprimer une course
-   URL : /courses/{id}
+### 5. Supprimer une course
 
-Méthode HTTP : DELETE
+**URL :** `/courses/{id}`
+
+**Méthode HTTP :** `DELETE`
 
 Description : Supprime une course de la base de données. Cette route est protégée par JWT.
 
-Paramètres de chemin :
+_Paramètres de chemin :_
 
 id (integer, obligatoire) : L'ID de la course à supprimer.
 
-Exemple de requête :
+**Exemple de requête :**
 
 ```bash
 curl -X DELETE http://localhost:8080/courses/1 \
@@ -222,14 +225,15 @@ Code HTTP 401 : Token JWT manquant ou invalide.
 
 Code HTTP 500 : Erreur interne du serveur.
 
-6. Vérifier l'état de l'API
-   URL : /health
+### 6. Vérifier l'état de l'API
 
-Méthode HTTP : GET
+**URL :** `/health`
+
+**Méthode HTTP :** `GET`
 
 Description : Vérifie si l'API est opérationnelle et connectée à la base de données.
 
-Exemple de requête :
+**Exemple de requête :**
 
 ```bash
 curl -X GET http://localhost:8080/health
@@ -248,8 +252,9 @@ Code HTTP 500 : L'API est opérationnelle, mais la connexion à la base de donn�
 API is running but failed to connect to the database
 ```
 
-7. Vérifier et réparer les ID des courses
-   URL : /check-repair-ids
+### 7. Vérifier et réparer les ID des courses
+
+**URL :** `/check-repair-ids`
 
 Méthode HTTP : GET
 
@@ -280,7 +285,8 @@ Code HTTP 401 : Token JWT manquant ou invalide.
 
 Code HTTP 500 : Erreur interne du serveur ou échec de la réparation.
 
-Gestion des erreurs
+## Gestion des erreurs
+
 L'API utilise les codes d'état HTTP standard pour indiquer le succès ou l'échec des opérations :
 
 200 OK : La requête a réussi.
@@ -289,16 +295,12 @@ L'API utilise les codes d'état HTTP standard pour indiquer le succès ou l'éch
 404 Not Found : La ressource demandée n'a pas été trouvée.
 500 Internal Server Error : Une erreur s'est produite côté serveur.
 
-Sécurité
+## Sécurité
 
 JWT : Les routes protégées nécessitent un token JWT valide pour être accédées. Ce token doit être passé dans l'en-tête Authorization de la requête sous la forme Bearer <token>.
 
-Notes
+## Notes
 
 Pagination et Filtrage : Le filtrage est disponible sur les paramètres name, category, date, min_amount, et max_amount pour la route GET /courses.
 Authentification : Les utilisateurs doivent s'inscrire via /register et se connecter via /login pour obtenir un token JWT.
 Protéger les routes : Les routes sensibles (ajout, suppression, etc.) sont protégées par JWT pour s'assurer que seuls les utilisateurs authentifiés peuvent les utiliser.
-
-```
-
-```
