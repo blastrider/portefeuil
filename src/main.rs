@@ -1,3 +1,4 @@
+mod config;
 mod handlers;
 mod middleware;
 mod models;
@@ -6,7 +7,9 @@ use actix_cors::Cors;
 use actix_web::middleware::Logger;
 use actix_web::{http, web, App, HttpServer};
 use actix_web_httpauth::middleware::HttpAuthentication;
+use config::load_config;
 use dotenv::dotenv;
+use env_logger::Env;
 use sqlx::postgres::PgPoolOptions;
 use std::env;
 
@@ -15,16 +18,24 @@ use crate::handlers::{
 };
 use crate::middleware::auth::jwt_middleware;
 
+#[derive(Debug, serde::Deserialize)]
+struct AppConfig {
+    database_url: String,
+    server_port: u16,
+    log_level: String,
+}
+
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    dotenv().ok();
-    env_logger::init();
+    let config = load_config();
+    let app_config: AppConfig = config.try_deserialize().unwrap();
 
-    let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+    env_logger::Builder::from_env(Env::default().default_filter_or(&app_config.log_level)).init();
+    // charge la configuration
 
     let pool = PgPoolOptions::new()
         .max_connections(5)
-        .connect(&database_url)
+        .connect(&app_config.database_url)
         .await
         .expect("Failed to create pool.");
 
@@ -57,7 +68,7 @@ async fn main() -> std::io::Result<()> {
             .route("/login", web::post().to(login_user)) // Route non protégée
             .route("/health", web::get().to(health_check)) // Route non protégée
     })
-    .bind("0.0.0.0:8080")?
+    .bind(("0.0.0.0", app_config.server_port))?
     .run()
     .await
 }
