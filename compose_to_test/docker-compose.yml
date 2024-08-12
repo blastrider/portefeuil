@@ -1,0 +1,34 @@
+version: "3.8"
+
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: portefeuil
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  app:
+    image: mguillemin/portefeuil_api:latest
+    environment:
+      - DATABASE_URL=postgres://user:password@db:5432/portefeuil
+      - RUST_LOG=debug
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+
+  frontend:
+    build: mguillemin/portefeuil_frontend:latest
+    ports:
+      - "3000:3000"
+    depends_on:
+      - app
+      - db
+
+volumes:
+  postgres_data:
