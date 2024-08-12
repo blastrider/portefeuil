@@ -44,14 +44,8 @@ Réponse :
 
 Code HTTP 200 : L'utilisateur a été inscrit avec succès.
 
-```json
-{
-  "id": "c9b1cdd0-1f2b-4eaf-83eb-28e57db06f37",
-  "username": "john_doe",
-  "email": "john@example.com",
-  "hashed_password": "$argon2i$v=19$m=4096,t=3,p=1$...",
-  "created_at": "2024-08-10T12:34:56"
-}
+```bash
+User registered successfully
 ```
 
 Code HTTP 400 : Requête invalide (par exemple, si un champ obligatoire est manquant ou si l'utilisateur existe déjà).
@@ -78,7 +72,6 @@ _Corps de la requête :_
 **Exemple de requête :**
 
 ```bash
-Copier le code
 curl -X POST http://localhost:8080/login \
 -H "Content-Type: application/json" \
 -d '{
@@ -91,10 +84,8 @@ Réponse :
 
 Code HTTP 200 : Connexion réussie, retourne un token JWT.
 
-```json
-{
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-}
+```bash
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 ```
 
 Code HTTP 401 : Identifiants incorrects.
@@ -103,7 +94,7 @@ Code HTTP 500 : Erreur interne du serveur.
 
 ### 3. Récupérer la liste des courses (avec filtres)
 
-**URL :** `/courses`
+**URL :** `/api/courses`
 
 **Méthode HTTP :** `GET`
 
@@ -122,8 +113,8 @@ Corps de la requête :
 **Exemple de requête :**
 
 ```bash
-curl -X GET "http://localhost:8080/courses?name=alimentaire&min_amount=20&max_amount=100" \
--H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+curl -X GET "http://localhost:8080/api/courses?name=alimentaire&min_amount=20&max_amount=100" \
+-H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." | jq
 ```
 
 Réponse :
@@ -148,7 +139,7 @@ Code HTTP 500 : Erreur interne du serveur.
 
 ### 4. Ajouter une course
 
-**URL :** `/courses`
+**URL :** `/api/courses`
 
 **Méthode HTTP :** `POST`
 
@@ -168,8 +159,7 @@ _Corps de la requête :_
 **Exemple de requête :**
 
 ```bash
-Copier le code
-curl -X POST http://localhost:8080/courses \
+curl -X POST http://localhost:8080/api/courses \
 -H "Content-Type: application/json" \
 -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." \
 -d '{
@@ -182,9 +172,11 @@ curl -X POST http://localhost:8080/courses \
 
 Réponse :
 
-Code HTTP 200 : La course a été ajoutée avec succès.
+```log
+200
+```
 
-```json
+```bash
 {
   "id": 1
 }
@@ -198,7 +190,7 @@ Code HTTP 500 : Erreur interne du serveur.
 
 ### 5. Supprimer une course
 
-**URL :** `/courses/{id}`
+**URL :** `/api/courses/{id}`
 
 **Méthode HTTP :** `DELETE`
 
@@ -211,15 +203,13 @@ id (integer, obligatoire) : L'ID de la course à supprimer.
 **Exemple de requête :**
 
 ```bash
-curl -X DELETE http://localhost:8080/courses/1 \
+curl -X DELETE http://localhost:8080/api/courses/1 \
 -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 ```
 
 Réponse :
 
-Code HTTP 200 : La course a été supprimée avec succès.
-
-Code HTTP 404 : Course non trouvée.
+Code HTTP 200 : Course a été supprimée avec succès.
 
 Code HTTP 401 : Token JWT manquant ou invalide.
 
@@ -248,9 +238,7 @@ API is running and database is connected
 Code HTTP 500 : L'API est opérationnelle, mais la connexion à la base de données a échoué.
 ```
 
-```text
-API is running but failed to connect to the database
-```
+( après "30 secondes")
 
 ### 7. Vérifier et réparer les ID des courses
 
@@ -281,8 +269,6 @@ Si la séquence d'ID a été réparée :
 ID sequence was broken and has been repaired
 ```
 
-Code HTTP 401 : Token JWT manquant ou invalide.
-
 Code HTTP 500 : Erreur interne du serveur ou échec de la réparation.
 
 ## Gestion des erreurs
@@ -303,4 +289,4 @@ JWT : Les routes protégées nécessitent un token JWT valide pour être accéd�
 
 Pagination et Filtrage : Le filtrage est disponible sur les paramètres name, category, date, min_amount, et max_amount pour la route GET /courses.
 Authentification : Les utilisateurs doivent s'inscrire via /register et se connecter via /login pour obtenir un token JWT.
-Protéger les routes : Les routes sensibles (ajout, suppression, etc.) sont protégées par JWT pour s'assurer que seuls les utilisateurs authentifiés peuvent les utiliser.
+Protéger les routes : Les routes sensibles (ajout, suppression, etc.) sont protégées par JWT.
