@@ -23,7 +23,7 @@ services:
       - db
 
   frontend:
-    build: mguillemin/portefeuil_frontend:latest
+    image: mguillemin/portefeuil_frontend:latest
     ports:
       - "3000:3000"
     depends_on:
