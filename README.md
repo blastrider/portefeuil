@@ -300,3 +300,13 @@ docker-compose up -d
 ```
 
 et vous connecter sur l'url : http://localhost:3000 pour accéder au front-end.
+Et http://localhost:3000/register pour créer un compte.
+On ne peut pas encore ajouter de courses mais c'est sur la Roadmap.
+
+## Roadmap
+
+[] Ajouter des courses depuis le front-end
+[] Définir un budget
+[] Pourvoir avoir une tendance sur plusieurs mois
+[] Un front-end plus convivial
+[] Meilleure gestion des erreurs
