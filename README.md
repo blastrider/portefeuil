@@ -290,3 +290,13 @@ JWT : Les routes protégées nécessitent un token JWT valide pour être accéd�
 Pagination et Filtrage : Le filtrage est disponible sur les paramètres name, category, date, min_amount, et max_amount pour la route GET /courses.
 Authentification : Les utilisateurs doivent s'inscrire via /register et se connecter via /login pour obtenir un token JWT.
 Protéger les routes : Les routes sensibles (ajout, suppression, etc.) sont protégées par JWT.
+
+## Test rapide
+
+Vous pouvez utiliser le docker compose dans le dossier "compose_to_test" et lancer la commande en local :
+
+```bash
+docker-compose up -d
+```
+
+et vous connecter sur l'url : http://localhost:3000 pour accéder au front-end.
